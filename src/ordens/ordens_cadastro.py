@@ -1,106 +1,40 @@
-from utils import obter_data_atual, calcular_diferenca_horas
+from utils import obter_data_atual
 from computadores import buscar_computador_id
 from funcionarios import buscar_funcionario_id, listar_funcionarios_resumido
 from .ordens_repo import gerar_novo_id_os, salvar_ordens
 from .ordens_sla import calcular_sla
+TIPOS_MANUTENCAO = ("Hardware", "Software", "Rede", "Limpeza")
+PRIORIDADES = ("Crítica", "Alta", "Média", "Baixa")
 
+def escolher_por_menu(titulo, opcoes):
+    print(f"\n{titulo}:")
+    for indice, valor in enumerate(opcoes, start=1): print(f"[{indice}] {valor}")
+    try: return opcoes[int(input("Escolha uma opção: ").strip()) - 1]
+    except Exception:
+        print("Favor, digite uma opção válida"); return None
 
 def criar_ordem(lista_ordens, lista_computadores, lista_funcionarios):
-    """Cria uma nova ordem de serviço vinculada a um computador e a um funcionário."""
-    print("\n" + "=" * 50)
-    print("🔧 ABRIR NOVA ORDEM DE SERVIÇO")
-    print("=" * 50)
-
-    if not lista_computadores:
-        print("\nNenhum computador cadastrado! Cadastre um computador antes de abrir uma OS.")
-        return lista_ordens
-
-    if not lista_funcionarios:
-        print("\nNenhum funcionário cadastrado! Cadastre um funcionário antes de abrir uma OS.")
-        return lista_ordens
-
-    # Mostra os computadores disponíveis de forma resumida.
-    print("\nCOMPUTADORES DISPONÍVEIS:")
-    for computador in lista_computadores:
-        print(f"ID: {computador['id']} | Nome: {computador['nome']} | Status: {computador['status']}")
-
-    try:
-        id_computador = int(input("\nDigite o ID do computador da OS: ").strip())
-    except ValueError:
-        print("❌ ID de computador inválido!")
-        return lista_ordens
-
+    print("\n" + "=" * 50); print("🔧 ABRIR NOVA ORDEM DE SERVIÇO"); print("=" * 50)
+    if not lista_computadores: print("Cadastre um computador antes de abrir OS."); return lista_ordens
+    if not lista_funcionarios: print("Cadastre um funcionário antes de abrir OS."); return lista_ordens
+    for comp in lista_computadores: print(f"ID: {comp.get('id')} | Nome: {comp.get('nome')} | Status: {comp.get('status')}")
+    try: id_computador = int(input("\nID do computador: ").strip())
+    except ValueError: print("ID inválido!"); return lista_ordens
     computador = buscar_computador_id(lista_computadores, id_computador)
-    if not computador:
-        print("❌ Computador não encontrado!")
-        return lista_ordens
-
-    # Mostra os funcionários para o usuário escolher o técnico responsável.
+    if not computador: print("Computador não encontrado!"); return lista_ordens
     listar_funcionarios_resumido(lista_funcionarios)
-
-    try:
-        id_funcionario = int(input("\nDigite o ID do funcionário responsável: ").strip())
-    except ValueError:
-        print("❌ ID de funcionário inválido!")
-        return lista_ordens
-
+    try: id_funcionario = int(input("\nID do funcionário responsável: ").strip())
+    except ValueError: print("ID inválido!"); return lista_ordens
     funcionario = buscar_funcionario_id(lista_funcionarios, id_funcionario)
-    if not funcionario:
-        print("❌ Funcionário não encontrado!")
-        return lista_ordens
-
-    # Coleta dos dados principais da ordem.
-    tipo_manutencao = input("Tipo de manutenção (Hardware/Software/Rede/Limpeza): ").strip().title()
+    if not funcionario: print("Funcionário não encontrado!"); return lista_ordens
+    tipo = escolher_por_menu("Tipo de manutenção", TIPOS_MANUTENCAO)
+    if not tipo: return lista_ordens
     descricao = input("Descrição do problema: ").strip()
-    prioridade = input("Prioridade (Crítica/Alta/Média/Baixa): ").strip().title()
-    tecnico_responsavel = funcionario["nome"]
-    data_abertura = obter_data_atual()
-
-    # A nova funcionalidade monetária usa início e fim para calcular o custo depois.
-    data_inicio_manutencao = input("Data e hora de início (AAAA-MM-DD HH:MM:SS): ").strip()
-    data_fim_manutencao = input("Data e hora de fim (AAAA-MM-DD HH:MM:SS): ").strip()
-
-    try:
-        tempo_total_horas = calcular_diferenca_horas(data_inicio_manutencao, data_fim_manutencao)
-    except Exception:
-        print("❌ Datas de manutenção inválidas!")
-        return lista_ordens
-
-    # O custo é calculado usando o salário por hora do funcionário.
-    custo_manutencao = round(funcionario["salario_por_hora"] * tempo_total_horas, 2)
-
-    # Tupla com status válidos, usada como referência didática.
-    status_iniciais = ("Aberta", "Em Andamento")
-    status = status_iniciais[0]
-
-    nova_ordem = {
-        "id_os": gerar_novo_id_os(lista_ordens),
-        "id_computador": computador["id"],
-        "nome_computador": computador["nome"],
-        "tipo_manutencao": tipo_manutencao,
-        "descricao": descricao,
-        "prioridade": prioridade,
-        "tecnico_responsavel": tecnico_responsavel,
-        "id_funcionario": funcionario["id_funcionario"],
-        "nome_funcionario": funcionario["nome"],
-        "data_abertura": data_abertura,
-        "data_inicio_manutencao": data_inicio_manutencao,
-        "data_fim_manutencao": data_fim_manutencao,
-        "tempo_total_horas": tempo_total_horas,
-        "status": status,
-        "sla_previsto": calcular_sla(prioridade),
-        "data_conclusao": None,
-        "solucao_aplicada": None,
-        "custo_manutencao": custo_manutencao,
-    }
-
-    lista_ordens.append(nova_ordem)
-    salvar_ordens(lista_ordens)
-
-    print("\n✅ Ordem de serviço criada com sucesso!")
-    print(f"OS: {nova_ordem['id_os']}")
-    print(f"Computador: {nova_ordem['nome_computador']}")
-    print(f"Funcionário: {nova_ordem['nome_funcionario']}")
-    print(f"Custo estimado/registrado: R$ {nova_ordem['custo_manutencao']:.2f}")
-
+    if not descricao: print("Descrição não pode ficar vazia."); return lista_ordens
+    prioridade = escolher_por_menu("Prioridade", PRIORIDADES)
+    if not prioridade: return lista_ordens
+    data_abertura = obter_data_atual(); nome_funcionario = funcionario.get("nome")
+    nova = {"id_os": gerar_novo_id_os(lista_ordens), "id_computador": computador.get("id"), "nome_computador": computador.get("nome"), "tipo_manutencao": tipo, "descricao": descricao, "prioridade": prioridade, "tecnico_responsavel": nome_funcionario, "id_funcionario": funcionario.get("id_funcionario"), "nome_funcionario": nome_funcionario, "data_abertura": data_abertura, "data_inicio_manutencao": data_abertura, "data_fim_manutencao": None, "tempo_total_horas": 0, "status": "Aberta", "sla_previsto": calcular_sla(prioridade), "data_conclusao": None, "solucao_aplicada": None, "custo_manutencao": 0}
+    lista_ordens.append(nova); salvar_ordens(lista_ordens)
+    print(f"\n✅ OS {nova['id_os']} aberta com sucesso em {data_abertura}!")
     return lista_ordens

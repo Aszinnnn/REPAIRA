@@ -1,56 +1,17 @@
 from datetime import datetime, timedelta
 
-
 def calcular_sla(prioridade):
-    """Calcula a data prevista de SLA a partir da prioridade da ordem."""
-    data_atual = datetime.now()
-
-    if prioridade == "Crítica":
-        dias = 1
-    elif prioridade == "Alta":
-        dias = 2
-    elif prioridade == "Média":
-        dias = 5
-    else:
-        dias = 10
-
-    data_sla = data_atual + timedelta(days=dias)
-    return data_sla.strftime("%Y-%m-%d")
-
+    dias_por_prioridade = {"Crítica": 1, "Alta": 2, "Média": 5, "Baixa": 10}
+    return (datetime.now() + timedelta(days=dias_por_prioridade.get(prioridade, 10))).strftime("%Y-%m-%d")
 
 def verificar_sla_atraso(lista_ordens):
-    """Verifica e exibe ordens com SLA vencido ou próximo do vencimento."""
     if not lista_ordens:
-        print("\n⚠️ Nenhuma ordem de serviço cadastrada!")
-        return
-
-    hoje = datetime.now().date()
-    atrasadas = []
-    proximas = []
-
+        print("\nNenhuma ordem cadastrada!"); return
+    hoje = datetime.now().date(); encontrou = False
+    print("\n⏰ VERIFICAÇÃO DE SLA")
     for ordem in lista_ordens:
-        if ordem["status"] in ["Aberta", "Em Andamento"]:
-            sla = datetime.strptime(ordem["sla_previsto"], "%Y-%m-%d").date()
-            dias = (sla - hoje).days
-            if dias < 0:
-                atrasadas.append((ordem, abs(dias)))
-            elif dias <= 2:
-                proximas.append((ordem, dias))
-
-    print("\n" + "=" * 60)
-    print("⏰ VERIFICAÇÃO DE SLA")
-    print("=" * 60)
-
-    if atrasadas:
-        print("\nORDENS ATRASADAS:")
-        for ordem, dias in atrasadas:
-            print(f"OS {ordem['id_os']} - {ordem['nome_computador']} - Atraso: {dias} dia(s)")
-    else:
-        print("\nNenhuma ordem atrasada.")
-
-    if proximas:
-        print("\nORDENS PRÓXIMAS DO VENCIMENTO:")
-        for ordem, dias in proximas:
-            print(f"OS {ordem['id_os']} - {ordem['nome_computador']} - Restam {dias} dia(s)")
-    else:
-        print("\nNenhuma ordem próxima do vencimento.")
+        if ordem.get("status") in ["Aberta", "Em Andamento"]:
+            sla = datetime.strptime(ordem.get("sla_previsto"), "%Y-%m-%d").date(); dias = (sla - hoje).days
+            if dias < 0: print(f"ATRASADA | OS {ordem.get('id_os')} | {abs(dias)} dia(s)"); encontrou=True
+            elif dias <= 2: print(f"PRÓXIMA | OS {ordem.get('id_os')} | {dias} dia(s)"); encontrou=True
+    if not encontrou: print("Nenhum alerta de SLA encontrado.")

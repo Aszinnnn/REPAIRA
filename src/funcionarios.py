@@ -1,6 +1,5 @@
 from utils import obter_data_atual, carregar_dados, salvar_dados, gerar_senha_padrao
 
-# Arquivo de persistência dos funcionários.
 ARQUIVO_FUNCIONARIOS = "funcionarios.json"
 
 # Tupla de tuplas usada para exibir e controlar os cargos disponíveis.
@@ -36,14 +35,14 @@ def gerar_novo_id_funcionario(lista_funcionarios):
     """Gera um novo ID sequencial para funcionário."""
     if not lista_funcionarios:
         return 1
-    ids = [funcionario["id_funcionario"] for funcionario in lista_funcionarios]
+    ids = [funcionario.get("id_funcionario", 0) for funcionario in lista_funcionarios]
     return max(ids) + 1
 
 
 def buscar_funcionario_id(lista_funcionarios, id_funcionario):
-    """Busca um funcionário pelo ID."""
+    """Busca um funcionário pelo ID usando .get para evitar KeyError."""
     for funcionario in lista_funcionarios:
-        if funcionario["id_funcionario"] == id_funcionario:
+        if funcionario.get("id_funcionario") == id_funcionario:
             return funcionario
     return None
 
@@ -51,7 +50,7 @@ def buscar_funcionario_id(lista_funcionarios, id_funcionario):
 def existe_gerente(lista_funcionarios):
     """Verifica se já existe um gerente cadastrado no sistema."""
     for funcionario in lista_funcionarios:
-        if funcionario["cargo"] == "Gerente":
+        if funcionario.get("cargo") == "Gerente":
             return True
     return False
 
@@ -70,6 +69,7 @@ def obter_horas_mensais_por_carga(carga_horaria):
 
 
 def autenticar_gerente():
+<<<<<<< HEAD
 
     funcionarios = carregar_funcionarios()
 
@@ -85,6 +85,28 @@ def autenticar_gerente():
         ):
             return True
 
+=======
+    """Autentica o gerente pelo ID e senha cadastrados em funcionarios.json."""
+    funcionarios = carregar_funcionarios()
+
+    print("\n" + "=" * 50)
+    print("🔐 AUTENTICAÇÃO DE GERENTE")
+    print("=" * 50)
+
+    id_digitado = input("Digite o ID do gerente: ").strip()
+    senha_digitada = input("Digite a senha: ").strip()
+
+    for funcionario in funcionarios:
+        id_funcionario = str(funcionario.get("id_funcionario"))
+        senha = funcionario.get("senha")
+        cargo = funcionario.get("cargo")
+
+        if id_funcionario == id_digitado and senha == senha_digitada and cargo == "Gerente":
+            print("✅ Acesso autorizado!")
+            return True
+
+    print("❌ Acesso negado! ID, senha ou cargo inválido.")
+>>>>>>> 5f4d35c (Atualização OS e de funcionarios)
     return False
 
 
@@ -98,7 +120,12 @@ def listar_funcionarios_resumido(lista_funcionarios):
     print(f"{'ID':<6} {'Nome':<28} {'Cargo':<15} {'R$/Hora':<12}")
     print("-" * 80)
     for funcionario in lista_funcionarios:
-        print(f"{funcionario['id_funcionario']:<6} {funcionario['nome']:<28} {funcionario['cargo']:<15} {funcionario['salario_por_hora']:<12.2f}")
+        print(
+            f"{funcionario.get('id_funcionario'):<6} "
+            f"{funcionario.get('nome', ''):<28} "
+            f"{funcionario.get('cargo', ''):<15} "
+            f"{funcionario.get('salario_por_hora', 0):<12.2f}"
+        )
     print("-" * 80)
 
 
@@ -112,14 +139,14 @@ def listar_funcionarios_completo(lista_funcionarios):
     print("👥 FUNCIONÁRIOS CADASTRADOS")
     print("=" * 110)
     for funcionario in lista_funcionarios:
-        print(f"ID: {funcionario['id_funcionario']}")
-        print(f"Nome: {funcionario['nome']}")
-        print(f"Cargo: {funcionario['cargo']}")
-        print(f"Carga Horária: {funcionario['carga_horaria']}")
-        print(f"Horas Mensais: {funcionario['horas_mensais']}")
-        print(f"Salário Líquido: R$ {funcionario['salario_liquido']:.2f}")
-        print(f"Salário por Hora: R$ {funcionario['salario_por_hora']:.2f}")
-        print(f"Senha Padrão: {funcionario['senha']}")
+        print(f"ID: {funcionario.get('id_funcionario')}")
+        print(f"Nome: {funcionario.get('nome')}")
+        print(f"Cargo: {funcionario.get('cargo')}")
+        print(f"Carga Horária: {funcionario.get('carga_horaria')}")
+        print(f"Horas Mensais: {funcionario.get('horas_mensais')}")
+        print(f"Salário Líquido: R$ {funcionario.get('salario_liquido', 0):.2f}")
+        print(f"Salário por Hora: R$ {funcionario.get('salario_por_hora', 0):.2f}")
+        print(f"Senha Padrão: {funcionario.get('senha')}")
         print("-" * 110)
 
 
@@ -130,8 +157,10 @@ def cadastrar_funcionario(lista_funcionarios):
     print("=" * 60)
 
     nome = input("Digite o nome do funcionário: ").strip()
+    if not nome:
+        print("❌ O nome não pode ficar vazio.")
+        return lista_funcionarios
 
-    # Menu de cargos usando tupla para manter o código simples e didático.
     print("\nEscolha o cargo:")
     for codigo, cargo in CARGOS:
         print(f"{codigo} - {cargo}")
@@ -154,7 +183,6 @@ def cadastrar_funcionario(lista_funcionarios):
         print("❌ Salário inválido!")
         return lista_funcionarios
 
-    # Menu simples para as cargas horárias mapeadas automaticamente.
     print("\nModelos de carga horária disponíveis:")
     cargas = tuple(MAPEAMENTO_CARGA_HORARIA.keys())
     for indice, carga in enumerate(cargas, start=1):

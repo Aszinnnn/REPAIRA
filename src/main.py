@@ -57,7 +57,7 @@ def exibir_menu_ordens():
     print("\n--- GERENCIAR ORDENS DE SERVIÇO ---")
     print("[1] Abrir nova ordem")
     print("[2] Listar ordens abertas")
-    print("[3] Atualizar status da ordem")
+    print("[3] Atualizar/Fechar ordem")
     print("[4] Verificar SLA")
     print("[5] Listar ordens por funcionário")
     print("[0] Voltar")
@@ -119,7 +119,9 @@ def main():
                 elif opcao_ordens == "2":
                     listar_ordens_abertas(ordens, computadores)
                 elif opcao_ordens == "3":
-                    ordens = atualizar_status_ordem(ordens, computadores)
+                    # Correção importante: a atualização/fechamento precisa dos funcionários
+                    # para calcular o custo da OS. Não deve receber computadores aqui.
+                    ordens = atualizar_status_ordem(ordens, funcionarios)
                 elif opcao_ordens == "4":
                     verificar_sla_atraso(ordens)
                 elif opcao_ordens == "5":
@@ -148,6 +150,13 @@ def main():
                     print("❌ Opção inválida!")
 
         elif opcao_principal == "4":
+            # Área protegida: somente gerente cadastrado pode registrar/listar funcionários.
+            if not autenticar_gerente():
+                continue
+
+            # Recarrega funcionários após autenticação para garantir dados atualizados do JSON.
+            funcionarios = carregar_funcionarios()
+
             while True:
                 exibir_menu_funcionarios()
                 opcao_func = input("Escolha uma opção: ").strip()
@@ -162,8 +171,16 @@ def main():
                     print("❌ Opção inválida!")
 
         elif opcao_principal == "5":
+<<<<<<< HEAD
             autenticar_gerente()
             menu_consulta_monetaria(ordens, funcionarios)
+=======
+            # Área protegida: somente gerente cadastrado pode acessar a consulta monetária.
+            if autenticar_gerente():
+                funcionarios = carregar_funcionarios()
+                ordens = carregar_ordens()
+                menu_consulta_monetaria(ordens, funcionarios)
+>>>>>>> 5f4d35c (Atualização OS e de funcionarios)
 
         elif opcao_principal == "0":
             print("\nSaindo do sistema... Até logo!")
