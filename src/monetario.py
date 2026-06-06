@@ -13,7 +13,6 @@ def recalcular_custo_ordem(ordem, lista_funcionarios):
 
 def exibir_custo_por_os(lista_ordens, lista_funcionarios):
     """Exibe o custo monetário de cada ordem de serviço."""
-    autenticar_gerente()
 
     if not lista_ordens:
         print("\nNenhuma ordem cadastrada!")
@@ -30,7 +29,6 @@ def exibir_custo_por_os(lista_ordens, lista_funcionarios):
 
 def exibir_total_mensal_por_funcionario(lista_ordens, lista_funcionarios):
     """Exibe o total mensal gasto por funcionário, agrupando por mês/ano."""
-    autenticar_gerente()
 
     if not lista_ordens:
         print("\nNenhuma ordem cadastrada!")
@@ -54,7 +52,6 @@ def exibir_total_mensal_por_funcionario(lista_ordens, lista_funcionarios):
 
 def exibir_ranking_custos(lista_ordens, lista_funcionarios):
     """Exibe um ranking simples de custo acumulado por funcionário."""
-    autenticar_gerente()
 
     if not lista_ordens:
         print("\nNenhuma ordem cadastrada!")

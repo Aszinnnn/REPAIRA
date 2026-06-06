@@ -70,12 +70,22 @@ def obter_horas_mensais_por_carga(carga_horaria):
 
 
 def autenticar_gerente():
-    """Ponto de extensão para a futura autenticação do gerente.
 
-    Por enquanto, a função sempre retorna True para facilitar o uso acadêmico.
-    No futuro, o grupo deverá implementar a validação real de ID e senha aqui.
-    """
-    return True
+    funcionarios = carregar_funcionarios()
+
+    id_digitado = input("Digite o ID do gerente: ")
+    senha_digitada = input("Digite a senha: ")
+
+    for funcionario in funcionarios:
+
+        if (
+            str(funcionario["id_funcionario"]) == id_digitado
+            and funcionario["senha"] == senha_digitada
+            and funcionario["cargo"] == "Gerente"
+        ):
+            return True
+
+    return False
 
 
 def listar_funcionarios_resumido(lista_funcionarios):

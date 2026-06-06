@@ -23,6 +23,7 @@ from funcionarios import (
     carregar_funcionarios,
     cadastrar_funcionario,
     listar_funcionarios_completo,
+    autenticar_gerente,
 )
 from monetario import menu_consulta_monetaria
 
@@ -161,6 +162,7 @@ def main():
                     print("❌ Opção inválida!")
 
         elif opcao_principal == "5":
+            autenticar_gerente()
             menu_consulta_monetaria(ordens, funcionarios)
 
         elif opcao_principal == "0":
