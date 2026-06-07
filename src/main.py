@@ -28,6 +28,10 @@ from funcionarios import (
 from monetario import menu_consulta_monetaria
 
 
+# ============================================================
+# MENUS
+# ============================================================
+
 def exibir_menu_principal():
     """Exibe o menu principal do sistema."""
     print("\n" + "=" * 50)
@@ -81,6 +85,94 @@ def exibir_menu_funcionarios():
     print("[0] Voltar")
 
 
+# ============================================================
+# FLUXOS DE MENU
+# ============================================================
+
+def menu_computadores(computadores):
+    """Controla o submenu de computadores."""
+    while True:
+        exibir_menu_computadores()
+        opcao = input("Escolha uma opção: ").strip()
+
+        if opcao == "1":
+            computadores = cadastrar_computador(computadores)
+        elif opcao == "2":
+            listar_computadores(computadores)
+        elif opcao == "3":
+            computadores = atualizar_status_computador(computadores)
+        elif opcao == "4":
+            computadores = deletar_computador(computadores)
+        elif opcao == "0":
+            return computadores
+        else:
+            print("Opção inválida.")
+
+
+def menu_ordens(ordens, computadores, funcionarios):
+    """Controla o submenu de ordens de serviço."""
+    while True:
+        exibir_menu_ordens()
+        opcao = input("Escolha uma opção: ").strip()
+
+        if opcao == "1":
+            ordens = criar_ordem(ordens, computadores, funcionarios)
+        elif opcao == "2":
+            listar_ordens_abertas(ordens, computadores)
+        elif opcao == "3":
+            # Importante: esta função precisa da lista de funcionários,
+            # pois o fechamento da OS calcula o custo pelo salário por hora.
+            ordens = atualizar_status_ordem(ordens, funcionarios)
+        elif opcao == "4":
+            verificar_sla_atraso(ordens)
+        elif opcao == "5":
+            listar_ordens_por_funcionario(ordens, funcionarios)
+        elif opcao == "0":
+            return ordens
+        else:
+            print("Opção inválida.")
+
+
+def menu_historico(ordens, computadores):
+    """Controla o submenu de histórico e estatísticas."""
+    while True:
+        exibir_menu_historico()
+        opcao = input("Escolha uma opção: ").strip()
+
+        if opcao == "1":
+            exibir_historico_completo(ordens)
+        elif opcao == "2":
+            exibir_historico_por_computador(ordens, computadores)
+        elif opcao == "3":
+            exibir_estatisticas(ordens, computadores)
+        elif opcao == "4":
+            exibir_sla_alerta(ordens)
+        elif opcao == "0":
+            return
+        else:
+            print("Opção inválida.")
+
+
+def menu_funcionarios(funcionarios):
+    """Controla o submenu de funcionários."""
+    while True:
+        exibir_menu_funcionarios()
+        opcao = input("Escolha uma opção: ").strip()
+
+        if opcao == "1":
+            funcionarios = cadastrar_funcionario(funcionarios)
+        elif opcao == "2":
+            listar_funcionarios_completo(funcionarios)
+        elif opcao == "0":
+            return funcionarios
+        else:
+            print("Opção inválida.")
+
+
+# ============================================================
+# PROGRAMA PRINCIPAL
+# ============================================================
+
 def main():
     """Função principal do sistema."""
     computadores = carregar_computadores()
@@ -89,104 +181,35 @@ def main():
 
     while True:
         exibir_menu_principal()
-        opcao_principal = input("Escolha uma opção: ").strip()
+        opcao = input("Escolha uma opção: ").strip()
 
-        if opcao_principal == "1":
-            while True:
-                exibir_menu_computadores()
-                opcao_computadores = input("Escolha uma opção: ").strip()
+        if opcao == "1":
+            computadores = menu_computadores(computadores)
 
-                if opcao_computadores == "1":
-                    computadores = cadastrar_computador(computadores)
-                elif opcao_computadores == "2":
-                    listar_computadores(computadores)
-                elif opcao_computadores == "3":
-                    computadores = atualizar_status_computador(computadores)
-                elif opcao_computadores == "4":
-                    computadores = deletar_computador(computadores)
-                elif opcao_computadores == "0":
-                    break
-                else:
-                    print("❌ Opção inválida!")
+        elif opcao == "2":
+            ordens = menu_ordens(ordens, computadores, funcionarios)
 
-        elif opcao_principal == "2":
-            while True:
-                exibir_menu_ordens()
-                opcao_ordens = input("Escolha uma opção: ").strip()
+        elif opcao == "3":
+            menu_historico(ordens, computadores)
 
-                if opcao_ordens == "1":
-                    ordens = criar_ordem(ordens, computadores, funcionarios)
-                elif opcao_ordens == "2":
-                    listar_ordens_abertas(ordens, computadores)
-                elif opcao_ordens == "3":
-                    # Correção importante: a atualização/fechamento precisa dos funcionários
-                    # para calcular o custo da OS. Não deve receber computadores aqui.
-                    ordens = atualizar_status_ordem(ordens, funcionarios)
-                elif opcao_ordens == "4":
-                    verificar_sla_atraso(ordens)
-                elif opcao_ordens == "5":
-                    listar_ordens_por_funcionario(ordens, funcionarios)
-                elif opcao_ordens == "0":
-                    break
-                else:
-                    print("❌ Opção inválida!")
-
-        elif opcao_principal == "3":
-            while True:
-                exibir_menu_historico()
-                opcao_historico = input("Escolha uma opção: ").strip()
-
-                if opcao_historico == "1":
-                    exibir_historico_completo(ordens)
-                elif opcao_historico == "2":
-                    exibir_historico_por_computador(ordens, computadores)
-                elif opcao_historico == "3":
-                    exibir_estatisticas(ordens, computadores)
-                elif opcao_historico == "4":
-                    exibir_sla_alerta(ordens)
-                elif opcao_historico == "0":
-                    break
-                else:
-                    print("❌ Opção inválida!")
-
-        elif opcao_principal == "4":
-            # Área protegida: somente gerente cadastrado pode registrar/listar funcionários.
-            if not autenticar_gerente():
-                continue
-
-            # Recarrega funcionários após autenticação para garantir dados atualizados do JSON.
-            funcionarios = carregar_funcionarios()
-
-            while True:
-                exibir_menu_funcionarios()
-                opcao_func = input("Escolha uma opção: ").strip()
-
-                if opcao_func == "1":
-                    funcionarios = cadastrar_funcionario(funcionarios)
-                elif opcao_func == "2":
-                    listar_funcionarios_completo(funcionarios)
-                elif opcao_func == "0":
-                    break
-                else:
-                    print("❌ Opção inválida!")
-
-        elif opcao_principal == "5":
-<<<<<<< HEAD
-            autenticar_gerente()
-            menu_consulta_monetaria(ordens, funcionarios)
-=======
-            # Área protegida: somente gerente cadastrado pode acessar a consulta monetária.
+        elif opcao == "4":
             if autenticar_gerente():
+                funcionarios = carregar_funcionarios()
+                funcionarios = menu_funcionarios(funcionarios)
+
+        elif opcao == "5":
+            if autenticar_gerente():
+                # Recarrega os dados antes da consulta para garantir persistência atualizada.
                 funcionarios = carregar_funcionarios()
                 ordens = carregar_ordens()
                 menu_consulta_monetaria(ordens, funcionarios)
->>>>>>> 5f4d35c (Atualização OS e de funcionarios)
 
-        elif opcao_principal == "0":
-            print("\nSaindo do sistema... Até logo!")
+        elif opcao == "0":
+            print("\nSaindo do sistema...")
             break
+
         else:
-            print("❌ Opção inválida!")
+            print("Opção inválida.")
 
 
 if __name__ == "__main__":
